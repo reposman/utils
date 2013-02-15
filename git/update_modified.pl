@@ -4,7 +4,7 @@ use Cwd qw/getcwd/;
 use File::Spec;
 use File::Glob qw/bsd_glob/;
 
-my $TEST = 1;
+my $TEST;
 if(@ARGV and $ARGV[0] eq '--test') {
 	$TEST = 1;
 	shift;
@@ -30,7 +30,7 @@ sub auto_commit {
 }
 
 my $cwd = getcwd();
-my $scriptdir = File::Spec->rel2abs($0,$cwd);#;#ARGV[0];
+my $scriptdir = File::Spec->rel2abs($HOOKS,$cwd);#;#ARGV[0];
 (undef,$scriptdir,undef) = File::Spec->splitpath($scriptdir);
 chdir($scriptdir) or die("$!\n");
 $cwd = $scriptdir;
