@@ -4,12 +4,12 @@ use Cwd qw/getcwd/;
 use File::Spec;
 use File::Glob qw/bsd_glob/;
 
-my $TEST;
+my $TEST = 1;
 if(@ARGV and $ARGV[0] eq '--test') {
 	$TEST = 1;
 	shift;
 }
-
+my $HOOKS = shift;
 
 sub run {
 	print STDERR ":",join(" ",@_),"\n";
@@ -26,7 +26,7 @@ sub auto_commit {
 	chdir($dir) or die("$!\n");
 	print STDERR "[$dir] commiting...\n";
 	run('git','add','-A');
-	run('sh',File::Spec->catfile($scriptdir, 's_commit.sh'));
+	run('perl',$HOOKS,'s_commit.sh');
 }
 
 my $cwd = getcwd();

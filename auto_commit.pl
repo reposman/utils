@@ -3,7 +3,8 @@ use strict;
 use Cwd qw/getcwd/;
 use File::Spec;
 my @subrepos = ('svn','git' );#,'git/privepo');
-my $sub_script = 'update_modified.pl';
+my $hooks = 'hooks.pl';
+my $update_script = 'git/update_modified.pl';
 my $commit_script = 'commit.pl';
 my @pargs;
 my @cargs;
@@ -22,38 +23,46 @@ while(@ARGV) {
 }
 
 sub run {
-	print STDERR "\t",join(" ",@_),"\n";
+	print STDERR " :",join(" ",@_),"\n";
 	return system(@_) == 0;
 }
-sub update_subrepo {
+sub select_prog {
+	my $name = shift;
 	my $dir = shift;
-	my $scriptdir = shift;
-	if(! -d $dir) {
-		print STDERR "$dir not exist.\n";
-		return;
-	}
-	chdir($dir) or die("$!\n");
-	my $script;
-	foreach('scripts/' . $sub_script, $sub_script) {
-		if(-f $_) {
-			$script = $_;
-			last
+	my $cwd = getcwd();
+	foreach my $d ($cwd,"scripts",$dir) {
+		my $prog = File::Spec->catfile($d,$name);
+		if(-f $prog) {
+			return $prog;
 		}
 	}
-	if(!$script) {
-		print STDERR "Error: no update_mofidied.pl found.\n";
-		return;
-	}
-	run('perl',$script,@_);
+	return undef;
 }
 my $cwd = getcwd();
 my $scriptdir = File::Spec->rel2abs($0,$cwd);#;#ARGV[0];
 (undef,$scriptdir,undef) = File::Spec->splitpath($scriptdir);
+print STDERR "Current working directory: $cwd\n";
+print STDERR "Use script directory: $scriptdir\n";
 foreach(@subrepos) {
-	print STDERR "Updating [$_] ...\n";
-	update_subrepo($_,$scriptdir,@pargs);
+	print STDERR "Entering [$_] ...";
+	if(!chdir($_)) {
+		print STDERR "\t[Error: $!]\n";
+		goto LAST;
+	}
+	print STDERR "\n";
+	print STDERR "Updating [$_] ...";
+	my $prog = select_prog($hooks,$scriptdir);
+	if($prog) {
+		print STDERR "\n";
+		run("perl",$prog,$update_script,@pargs);
+	}
+	else {
+		print STDERR "\t[Error: Command not found]\n";
+	}
+LAST:
+	print STDERR "Leaving [$_] ...\n";
 	chdir($cwd);
 }
 print STDERR "Commiting ...\n";
-run('perl',File::Spec->catfile($scriptdir,$commit_script),@cargs);
+run('perl',select_prog($commit_script,$scriptdir),@cargs);
 
