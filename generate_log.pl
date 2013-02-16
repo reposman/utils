@@ -10,10 +10,10 @@ sub generate_log {
 	my $logfile = shift;
 	my $dir = shift;
 	return unless(-d $dir);
-	return unless(-f $dir . '/generate_log.pl');
+	return unless(-f $dir . '/hooks.pl');
 	open FO, ">", $logfile;
 	chdir $dir;
-	open FI,"-|","perl","generate_log.pl";
+	open FI,"-|","perl","hooks.pl","$dir/generate_log.pl";
 	print FO <FI>;
 	close FO;
 	chdir $CWD;

@@ -4,6 +4,8 @@ use File::Glob qw/bsd_glob/;
 use strict;
 use version '5.8';
 
+my $HOOKS = shift;
+
 sub run {
 	print STDERR join(" ",@_),"\n";
 	return system(@_)==0;
