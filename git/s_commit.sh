@@ -1,4 +1,5 @@
 #!/bin/sh
+shift
 msg="$*"
 d=`dirname "$0"`
 

@@ -26,7 +26,7 @@ sub auto_commit {
 	chdir($dir) or die("$!\n");
 	print STDERR "[$dir] commiting...\n";
 	run('git','add','-A');
-	run('perl',$HOOKS,'s_commit.sh');
+	run('perl',$HOOKS,'git/s_commit.sh');
 }
 
 my $cwd = getcwd();
