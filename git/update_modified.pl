@@ -60,7 +60,7 @@ my @glob3 = qw{
 	*/*/.git/HEAD
 };
 
-my @list_cmd = qw/is-modified.pl/;
+my @list_cmd = ("$scriptdir/is-modified.pl");
 push @list_cmd,'--write' unless($TEST);
 my @testing = map {glob($_)} (@glob1,@glob2,@glob3);
 if(!@testing) {
