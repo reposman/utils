@@ -3,7 +3,6 @@ use strict;
 use Cwd qw/getcwd/;
 use File::Spec;
 use File::Glob qw/bsd_glob/;
-
 my $TEST;
 if(@ARGV and $ARGV[0] eq '--test') {
 	$TEST = 1;
@@ -21,7 +20,7 @@ sub run {
 
 sub auto_commit {
 	my $dir = shift;
-	my $scriptdir = shift;
+	my $HOOKDIR = shift;
 	print STDERR "$dir not exist.\n" unless(-d $dir);
 	chdir($dir) or die("$!\n");
 	print STDERR "[$dir] commiting...\n";
@@ -30,10 +29,12 @@ sub auto_commit {
 }
 
 my $cwd = getcwd();
-my $scriptdir = File::Spec->rel2abs($HOOKS,$cwd);#;#ARGV[0];
+my $scriptdir = File::Spec->rel2abs($0,$cwd);#;#ARGV[0];
 (undef,$scriptdir,undef) = File::Spec->splitpath($scriptdir);
-chdir($scriptdir) or die("$!\n");
-$cwd = $scriptdir;
+my $HOOKDIR = File::Spec->rel2abs($HOOKS,$cwd);#;#ARGV[0];
+(undef,$HOOKDIR,undef) = File::Spec->splitpath($HOOKDIR);
+chdir($HOOKDIR) or die("$!\n");
+$cwd = $HOOKDIR;
 
 my @glob1 = qw{
 	*.git/index
@@ -82,7 +83,7 @@ foreach(keys %modified) {
 	if(m/^(.+)\/git$/) {
 		if(-d "$1/.git") {
 			$repos{"$1/.git"} = 1;
-			auto_commit($1,$scriptdir);
+			auto_commit($1,$HOOKDIR);
 			chdir($cwd);
 		}
 	}
@@ -116,7 +117,7 @@ foreach(keys %repos) {
 		run('reposman','push',@ARGV,'--',$_);
 	}
 }
-#run('sh',"$scriptdir/sync-repos.sh",keys %repos,@ARGV) unless($TEST);
+#run('sh',"$HOOKDIR/sync-repos.sh",keys %repos,@ARGV) unless($TEST);
 run('git','add','.is-modified');
 print STDERR "Done.\n";
 #use Data::Dumper;print Data::Dumper->Dump([\%status,\%repos],[qw/*status *repos/]);
